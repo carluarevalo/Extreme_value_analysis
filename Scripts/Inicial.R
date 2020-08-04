@@ -29,7 +29,11 @@ ggplot(data=datos, aes(x=t, y=tMax)) + xlab("Años") + ylab("Temperatura") + geom
 #distribucion, tanto la correspondiente a los valores mas altos como la de los mas bajos de la variable aleatoria en estudio. 
 #En la practica existen dos aproximaciones a la Teoría de Valores Extremos: el primer metodo se basa en el ajuste de la distribucion de los
 #valores maximos o minimos, mientras que en la segunda aproximacion el análisis de los valores extremos se realiza a partir del analisis de
-#los valores que exceden cierto umbral.
+#los valores que exceden cierto umbral. Veamos cada uno por separado.
+
+#MÉTODO 1#
+
+
 
 
 
