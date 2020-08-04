@@ -1,0 +1,62 @@
+---
+jupyter:
+  jupytext:
+    formats: ipynb,Rmd
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.4.2
+  kernelspec:
+    display_name: R
+    language: R
+    name: ir
+---
+
+## Tipos de Distribuciones Extremas
+
+
+|Name|Type|Eq|
+|--|--|--|
+|**Gumbel**|$$\Large I$$|$$\Large G(z) =
+\begin{cases}
+    exp\left\{-exp \left[ - \left(\frac {z-b}{a} \right) \right]\right\}, & -\infty < z < \infty \\
+\end{cases}$$|
+|**Fréchet**|$$\Large II$$|$$\Large G(z) = 
+\begin{cases}
+    0, & z \leq b \\
+    exp\left\{- \left(\frac {z-b}{a} \right)^{-\alpha} \right\}, & z > b
+\end{cases} $$|
+|**Weibull**|$$\Large III$$|$$\Large G(z) = 
+\begin{cases}
+    exp\left\{- \left[ - \left(\frac {z-b}{a} \right)^{\alpha}\right] \right\}, & z < b \\
+    1,  & z \geq b
+\end{cases} $$|
+
+
+> $a,b,\alpha > 0$
+
+
+## Generalized Extreme Value (GEV) distribution
+
+
+$$\Large G(z) =  exp\left\{- \left[1 + \xi \left(\frac {z-\mu}{\sigma} \right)^{- \frac 1 \xi}\right] \right\}$$
+
+
+>$\large \mu$: Location param 
+>
+>$\large \sigma$: Scale param 
+>
+>$\large \xi$: Shape param 
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
