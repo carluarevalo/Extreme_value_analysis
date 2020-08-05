@@ -17,7 +17,7 @@ ajuste
 #$par.ests
 #xi      sigma         mu 
 #-0.2141458  6.0193876 20.9820117
-
+max_datos <- ajuste$data
 # Lo guardo en variables
 ests <- ajuste$par.ests
 xi <-ests[1]
@@ -26,9 +26,9 @@ mu <- ests[3]
 # Los datos
 xgrid <- seq(0,100,0.1)
 # Histograma de TODOS los datos
-hist(datos[, 'tMax'], prob=T, col='yellowgreen', xlim=c(0, 50), ylim=c(0, 0.2))
+hist(max_datos, prob=T, col='yellowgreen', xlim=c(0, 50), ylim=c(0, 0.2))
 # Histograma de datos > 30 (por poner una referencia)
-hist(datos[datos$tMax>35, 'tMax'], prob=T, col=rgb(1,0,0,0.5), add=T)
+#hist(datos[datos$tMax>35, 'tMax'], prob=T, col=rgb(1,0,0,0.5), add=T)
 # GEV con parametros encontrados arriba
 lines(xgrid, dgev(xgrid,
                  xi = xi,
@@ -46,3 +46,4 @@ abline(v=mu, lwd=3, lty=3, col='orange')
 legend('topleft', c('Datos','Datos>35','Ajuste GEV', 'mu_hat'),
        lty=c(1,1,1,3), lwd=3,
        col=c('yellowgreen',rgb(1,0,0,0.5), 'steelblue', 'orange'))
+
