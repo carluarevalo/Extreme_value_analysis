@@ -50,7 +50,7 @@ $$\Large G(z) =  exp\left\{- \left[1 + \xi \left(\frac {z-\mu}{\sigma} \right)^{
 >$\large \xi$: Shape param 
 
 ```{r}
-
+1+1
 ```
 
 ```{r}
