@@ -43,7 +43,7 @@ lines(xgrid, dgev(xgrid,
 #       type='l', lwd=3, col='orange')
 # Linea vertical en xi
 abline(v=mu, lwd=3, lty=3, col='orange')
-legend('topleft', c('Datos','Datos>35','Ajuste GEV', 'mu_hat'),
-       lty=c(1,1,1,3), lwd=3,
-       col=c('yellowgreen',rgb(1,0,0,0.5), 'steelblue', 'orange'))
+legend('topleft', c('Datos','Ajuste GEV', 'mu_hat'),
+       lty=c(1,1,3), lwd=3,
+       col=c('yellowgreen', 'steelblue', 'orange'))
 
