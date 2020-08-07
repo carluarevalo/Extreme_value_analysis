@@ -1,0 +1,101 @@
+---
+jupyter:
+  jupytext:
+    formats: ipynb,Rmd
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.4.2
+  kernelspec:
+    display_name: R
+    language: R
+    name: ir
+---
+
+# Modelos de Umbral
+
+```{r}
+
+```
+
+Modelar **por bloques** como asume GEV hace **uso poco eficiente de los datos** de existir un grado 'más fino' de valores históricos máximos (ej: máxima diaria)
+
+Al elegir un único máximo por cada bloque, perdemos la oportunidad de capturar cualquier otro máximo similar en el mismo bloque, o inyectamos valores poco informativos para bloques sin máximos relevantes. 
+
+![gev-vs-pot](https://cdn.analystprep.com/study-notes/wp-content/uploads/2019/10/25114612/page-43.jpg)
+
+
+Formalmente,
+
+Sean $\normalsize X_1, X_2, \dots , X_m$ una secuencia de variables aleatorias independientes e identicamente distribuídas, con distribución $\normalsize X_1 \sim F$
+
+Podemos definir a la distribución de los valores extremos como:
+
+$$\large P\left( X_i > u + y \ |\   X > u \right) = \frac {1 - F(u + y)}{1-F(u)}$$
+
+con
+> $\normalsize u$ umbral,
+>
+> $\normalsize y > 0$ distancia a $\normalsize u$
+>
+> para cualquier $\normalsize X_i \sim F$
+
+Notar que el cociente es simplemente la relación entre el **area a derecha de un valor $\normalsize y$ por encima del umbral**, dividido por el **área a derecha del umbral**  $\normalsize u$ para la densidad de $\normalsize F$
+
+
+Solo bastaría conocer $\normalsize F$ para calcular la distribución de excesos.
+
+En general, $\normalsize F$ es una distribución **no conocida** que debemos aproximar a partir de los datos.
+
+
+# Modelos Asintóticos:
+## Distribución Pareto Generalizada (GPD)
+
+
+Asumiendo las mismas hipótesis que en GEV, la distribución de excesos por sobre un umbral $\normalsize u$, está dada por:
+
+$$\Large H_{\sigma,\xi}(y) = 
+\begin{cases}
+    1 - \left( 1 + \frac{\xi}{\sigma} \ y \right)^{- \frac 1 \xi}, & \text{si}\ \  \xi \neq 0 \\
+    1 - e^{- \frac y \sigma}, & \text{si}\ \  \xi = 0
+\end{cases} $$
+
+> con $\normalsize y > 0$, valor por encima el umbral.
+
+
+$\normalsize \xi$, llamado ***parámetro de forma***, mantiene el mismo valor al ajustar los parámetros con GEV, y en ambos casos se cumple que:
+
+> Si $\normalsize \xi < 0$:
+> * la distribución de excesos tiene **cota superior** dada por: $\normalsize u - \frac \sigma \xi$
+
+> Si $\normalsize \xi > 0$:
+> * la distribución de excesos **no tiene cota superior**.
+
+> Si $\normalsize \xi = 0$:
+> * la distribución de excesos **no tiene cota superior** y se reduce a una distribución $\normalsize \text{Exponencial}\left(\frac 1 \sigma \right)$
+
+
+### Ejemplo:
+
+Volviendo a la distribución de valores extremos de la primera parte y si elegimos $F$ como Exponencial
+
+Si
+> $\normalsize F(x) = 1 - e^{-x}$,
+>
+>para $\normalsize x > 0$
+
+Entonces:
+
+$$\large \begin{align}
+P\left( X_i > u + y \ |\   X > u \right) &= \frac {1 - F(u + y)}{1-F(u)}\\\\
+&= \frac {e^{-(u+y)}}{e^{-u}}\\\\
+&= e^{-y}
+\end{align}$$
+
+
+De forma que la distribución de extremos de las variables aleatorias Xi con distribución exponencial, es a su vez exponencial, lo que se explica también por la [**propiedad de pérdida de memoria** de la distribución Exponencial](https://en.wikipedia.org/wiki/Memorylessness).
+
+```{r}
+
+```
