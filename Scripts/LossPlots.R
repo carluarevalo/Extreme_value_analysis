@@ -5,6 +5,7 @@
 #install.packages("evir")
 library(heatwaveR)
 library(evir)
+library(plotly)
 
 datos <- Algiers
 
@@ -57,7 +58,14 @@ for(i in 1:Nmus){
 
 #persp(losses)    
 fig <- plot_ly(x=~mus, y=~sigmas, z = ~losses)
-fig <- fig %>% add_surface()
+fig <- fig %>% add_surface(contours = list(
+    z = list(
+        show=TRUE,
+        usecolormap=TRUE,
+        highlightcolor="#ff0000",
+        project=list(z=TRUE)
+    )
+))
 fig <- fig %>% layout(
     title = "Loss function, fixed xi",
     scene = list(
@@ -87,9 +95,16 @@ for(i in 1:Nmus){
 
 #persp(losses)    
 fig <- plot_ly(x=mus, y=xis, z = ~losses)
-fig <- fig %>% add_surface()
+fig <- fig %>% add_surface(contours = list(
+    z = list(
+        show=TRUE,
+        usecolormap=TRUE,
+        highlightcolor="#ff0000",
+        project=list(z=TRUE)
+    )
+))
 fig <- fig %>% layout(
-    title = "Loss function, fixed xi",
+    title = "Loss function, fixed sigma",
     scene = list(
         xaxis = list(title = "Mu"),
         yaxis = list(title = "Xi"),
@@ -116,9 +131,16 @@ for(j in 1:Nsigmas){
 
 #persp(losses)    
 fig <- plot_ly(x=~sigmas, y=~xis, z = ~losses)
-fig <- fig %>% add_surface()
+fig <- fig %>% add_surface(contours = list(
+    z = list(
+        show=TRUE,
+        usecolormap=TRUE,
+        highlightcolor="#ff0000",
+        project=list(z=TRUE)
+    )
+))
 fig <- fig %>% layout(
-    title = "Loss function, fixed xi",
+    title = "Loss function, fixed mu",
     scene = list(
         xaxis = list(title = "Sigma"),
         yaxis = list(title = "Xi"),
