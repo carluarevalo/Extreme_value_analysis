@@ -1,16 +1,8 @@
 ---
-jupyter:
-  jupytext:
-    formats: ipynb,Rmd
-    text_representation:
-      extension: .Rmd
-      format_name: rmarkdown
-      format_version: '1.2'
-      jupytext_version: 1.4.2
-  kernelspec:
-    display_name: R
-    language: R
-    name: ir
+title: "Modelos de Umbral"
+author: "jack"
+date: "8/7/2020"
+output: html_document
 ---
 
 # Modelos de Umbral
