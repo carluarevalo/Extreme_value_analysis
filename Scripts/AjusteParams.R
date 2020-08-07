@@ -14,7 +14,6 @@ boxplot(datos[,'tMax'], datos[,'tMin'])
 # Ver consola para detalles:
 for(i in c(1,2,3,4,5,6,7,14,30,60,90,120,240,365,730,3*365)){
     ajuste <- gev(datos[,'tMax'], i)
-    ajuste
     #$par.ests
     #xi      sigma         mu 
     #-0.2141458  6.0193876 20.9820117
@@ -49,3 +48,8 @@ for(i in c(1,2,3,4,5,6,7,14,30,60,90,120,240,365,730,3*365)){
            col=c('yellowgreen', 'steelblue', 'orange'))
 
 }
+
+
+
+
+
