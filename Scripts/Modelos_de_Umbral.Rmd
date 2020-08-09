@@ -3,6 +3,18 @@ title: "Modelos de Umbral"
 author: "jack"
 date: "8/7/2020"
 output: html_document
+jupyter:
+  jupytext:
+    formats: ipynb,Rmd
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.4.2
+  kernelspec:
+    display_name: R [conda env:r] *
+    language: R
+    name: conda-env-r-r
 ---
 
 # Modelos de Umbral
@@ -68,7 +80,11 @@ $\normalsize \xi$, llamado ***parámetro de forma***, mantiene el mismo valor al
 > * la distribución de excesos **no tiene cota superior** y se reduce a una distribución $\normalsize \text{Exponencial}\left(\frac 1 \sigma \right)$
 
 
-### Ejemplo:
+### Caso particular: Exponencial
+
+**Para pensar:** 
+
+> ¿A qué distribución corresponderá la cola de valores por encima de un umbral $u$?
 
 Volviendo a la distribución de valores extremos de la primera parte y si elegimos $F$ como Exponencial
 
@@ -88,6 +104,45 @@ P\left( X_i > u + y \ |\   X > u \right) &= \frac {1 - F(u + y)}{1-F(u)}\\\\
 
 De forma que la distribución de extremos de las variables aleatorias Xi con distribución exponencial, es a su vez exponencial, lo que se explica también por la [**propiedad de pérdida de memoria** de la distribución Exponencial](https://en.wikipedia.org/wiki/Memorylessness).
 
-```{r}
+Notar que esta función se corresponde con el caso particular de la distribución generalizada de Pareto, con $\xi=0$ y $\sigma=1$
 
-```
+
+
+
+## Eligiendo el Umbral
+
+
+
+<!-- #region -->
+Anteriormente vimos que los excesos sobre el umbral $u$ se pueden considerar variables a aleatorias, cuya distribución se puede aproximar por algún miembro de la familia Pareto generalizada.
+
+Pero elegir este umbral requiere de dos cosas:
+
+1. Un análisis del ***balance entre Sesgo y Varianza***, de la misma forma que hacía elegir el tamaño del bloque en GEV:
+
+  * Un **umbral muy bajo** puede hacer perder la base asintótica del modelo, produciendo un **sesgo**.
+  * Un **umbral muy alto** producirá pocas observaciones por encima del mismo, produciendo **varianza** alta.
+
+
+2. Estabilidad de los parámetros estimados a medida que modificamos u.
+<!-- #endregion -->
+
+## Estimación Paramétrica
+
+Una vez elegido el umbral, podemos usar Máxima Verosimilitud para estimar los parámetros de la distribución Pareto.
+
+Donde:
+
+> $$\Large \ell (\sigma, \xi) = - k \log \sigma - (1 + \frac 1 \xi) \ \sum_{i=0}^k \log (1 + \frac \xi \sigma y_i)$$
+
+Y en el caso de $\xi=0$ se reduce a:
+> $$\Large \ell_{\xi=0}(\sigma) = - k \log \sigma - \sigma^{-1} \ \sum_{i=1}^k y_i$$
+
+**No es posible** maximizar estas funciones de manera analítica, por lo que debe recurrirse a métodos numéricos (evitando posibles inestabilidades cuando $\xi \approx 0$)
+
+
+## Verificación Gráfica
+
+* Si el modelo Pareto modela correctamente los excesos sobre $u$, entonces tanto los gráficos de probabilidad acumulada como cuantiles, deberían consistir en puntos aproximadamente lineales.
+
+* También puede realizarse el histograma de los excesos por encima del umbral, y graficar encima la función de densidad de la familia Pareto con los parámetros optimizados. 
