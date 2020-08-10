@@ -1,0 +1,148 @@
+---
+title: "Modelos de Umbral"
+author: "jack"
+date: "8/7/2020"
+output: html_document
+jupyter:
+  jupytext:
+    formats: ipynb,Rmd
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.4.2
+  kernelspec:
+    display_name: R [conda env:r] *
+    language: R
+    name: conda-env-r-r
+---
+
+# Modelos de Umbral
+
+```{r}
+
+```
+
+Modelar **por bloques** como asume GEV hace **uso poco eficiente de los datos** de existir un grado 'más fino' de valores históricos máximos (ej: máxima diaria)
+
+Al elegir un único máximo por cada bloque, perdemos la oportunidad de capturar cualquier otro máximo similar en el mismo bloque, o inyectamos valores poco informativos para bloques sin máximos relevantes. 
+
+![gev-vs-pot](https://cdn.analystprep.com/study-notes/wp-content/uploads/2019/10/25114612/page-43.jpg)
+
+
+Formalmente,
+
+Sean $\normalsize X_1, X_2, \dots , X_m$ una secuencia de variables aleatorias independientes e identicamente distribuídas, con distribución $\normalsize X_1 \sim F$
+
+Podemos definir a la distribución de los valores extremos como:
+
+$$\large P\left( X_i > u + y \ |\   X > u \right) = \frac {1 - F(u + y)}{1-F(u)}$$
+
+con
+> $\normalsize u$ umbral,
+>
+> $\normalsize y > 0$ distancia a $\normalsize u$
+>
+> para cualquier $\normalsize X_i \sim F$
+
+Notar que el cociente es simplemente la relación entre el **area a derecha de un valor $\normalsize y$ por encima del umbral**, dividido por el **área a derecha del umbral**  $\normalsize u$ para la densidad de $\normalsize F$
+
+
+Solo bastaría conocer $\normalsize F$ para calcular la distribución de excesos.
+
+En general, $\normalsize F$ es una distribución **no conocida** que debemos aproximar a partir de los datos.
+
+
+# Modelos Asintóticos:
+## Distribución Pareto Generalizada (GPD)
+
+
+Asumiendo las mismas hipótesis que en GEV, la distribución de excesos por sobre un umbral $\normalsize u$, está dada por:
+
+$$\Large H_{\sigma,\xi}(y) = 
+\begin{cases}
+    1 - \left( 1 + \frac{\xi}{\sigma} \ y \right)^{- \frac 1 \xi}, & \text{si}\ \  \xi \neq 0 \\
+    1 - e^{- \frac y \sigma}, & \text{si}\ \  \xi = 0
+\end{cases} $$
+
+> con $\normalsize y > 0$, valor por encima el umbral.
+
+
+$\normalsize \xi$, llamado ***parámetro de forma***, mantiene el mismo valor al ajustar los parámetros con GEV, y en ambos casos se cumple que:
+
+> Si $\normalsize \xi < 0$:
+> * la distribución de excesos tiene **cota superior** dada por: $\normalsize u - \frac \sigma \xi$
+
+> Si $\normalsize \xi > 0$:
+> * la distribución de excesos **no tiene cota superior**.
+
+> Si $\normalsize \xi = 0$:
+> * la distribución de excesos **no tiene cota superior** y se reduce a una distribución $\normalsize \text{Exponencial}\left(\frac 1 \sigma \right)$
+
+
+### Caso particular: Exponencial
+
+**Para pensar:** 
+
+> ¿A qué distribución corresponderá la cola de valores por encima de un umbral $u$?
+
+Volviendo a la distribución de valores extremos de la primera parte y si elegimos $F$ como Exponencial
+
+Si
+> $\normalsize F(x) = 1 - e^{-x}$,
+>
+>para $\normalsize x > 0$
+
+Entonces:
+
+$$\large \begin{align}
+P\left( X_i > u + y \ |\   X > u \right) &= \frac {1 - F(u + y)}{1-F(u)}\\\\
+&= \frac {e^{-(u+y)}}{e^{-u}}\\\\
+&= e^{-y}
+\end{align}$$
+
+
+De forma que la distribución de extremos de las variables aleatorias Xi con distribución exponencial, es a su vez exponencial, lo que se explica también por la [**propiedad de pérdida de memoria** de la distribución Exponencial](https://en.wikipedia.org/wiki/Memorylessness).
+
+Notar que esta función se corresponde con el caso particular de la distribución generalizada de Pareto, con $\xi=0$ y $\sigma=1$
+
+
+
+
+## Eligiendo el Umbral
+
+
+
+<!-- #region -->
+Anteriormente vimos que los excesos sobre el umbral $u$ se pueden considerar variables a aleatorias, cuya distribución se puede aproximar por algún miembro de la familia Pareto generalizada.
+
+Pero elegir este umbral requiere de dos cosas:
+
+1. Un análisis del ***balance entre Sesgo y Varianza***, de la misma forma que hacía elegir el tamaño del bloque en GEV:
+
+  * Un **umbral muy bajo** puede hacer perder la base asintótica del modelo, produciendo un **sesgo**.
+  * Un **umbral muy alto** producirá pocas observaciones por encima del mismo, produciendo **varianza** alta.
+
+
+2. Estabilidad de los parámetros estimados a medida que modificamos u.
+<!-- #endregion -->
+
+## Estimación Paramétrica
+
+Una vez elegido el umbral, podemos usar Máxima Verosimilitud para estimar los parámetros de la distribución Pareto.
+
+Donde:
+
+> $$\Large \ell (\sigma, \xi) = - k \log \sigma - (1 + \frac 1 \xi) \ \sum_{i=0}^k \log (1 + \frac \xi \sigma y_i)$$
+
+Y en el caso de $\xi=0$ se reduce a:
+> $$\Large \ell_{\xi=0}(\sigma) = - k \log \sigma - \sigma^{-1} \ \sum_{i=1}^k y_i$$
+
+**No es posible** maximizar estas funciones de manera analítica, por lo que debe recurrirse a métodos numéricos (evitando posibles inestabilidades cuando $\xi \approx 0$)
+
+
+## Verificación Gráfica
+
+* Si el modelo Pareto modela correctamente los excesos sobre $u$, entonces tanto los gráficos de probabilidad acumulada como cuantiles, deberían consistir en puntos aproximadamente lineales.
+
+* También puede realizarse el histograma de los excesos por encima del umbral, y graficar encima la función de densidad de la familia Pareto con los parámetros optimizados. 
