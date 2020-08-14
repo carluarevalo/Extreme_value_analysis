@@ -63,7 +63,7 @@ En otras palabras, solo estamos interesados en **la cola de la distribución**.
 > > 
 > > Pero al tener un umbral que **descarta** los valores por debajo del mismo, podemos ver cómo la probabilidad (área) de caer en un entorno de $u$ se redujo a la mitad
 > >
-> > ![image.png](attachment:0bbb143b-2eb4-451e-9d39-5ddd445a473b.png)
+> > ![intro.png](../Imagenes/intro.png)
 <!-- #endregion -->
 
 # Ejercicio 1.
