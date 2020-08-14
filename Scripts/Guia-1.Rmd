@@ -13,11 +13,35 @@ jupyter:
     name: ir
 ---
 
-Escribo acá algunos posibles ejercicios.
+Escribo acá algunos posibles ejercicios
 
-```{r}
+$$\huge 🙈$$
 
-```
+
+En esta guía veremos cómo modelar una serie de datos observados usando:
+1. **Máximos por Períodos** y el ***Teorema de Generalized Extreme Values (GEV)***
+2. **Excesos sobre Umbral** y el ***Teorema de Generalized Pareto Distribution (GPD)***
+
+Los datos se corresponden al dataset de $\mathcal C$arli  `[y acá iría descripción del dataset]`.
+
+1. Para máximos por períodos: 
+> usamos Gumbell como dijo Mariela? justificando que es el caso más común y (tal vez) simple de analizar.
+>
+> Mencionamos usos de los otros dos casos? maybe grafiquitos en imagen y fin?
+
+1. Para umbral
+> Hay solo una, pero con parámetro = 0
+
+3. Para ambos
+> * Filtrar datos => Ajustar F => Devolver parámetros
+> Maybe: Guardar matriz de var-cov => calcular varianza del nivel de retorno $Var(\hat z_p)\approx \nabla z_p^T \ V \ \nabla z_p$, donde V es la matriz de var-cov de los estimadores de cada parametro
+>
+>   Capaz se pueda graficar el nivel de retorno en funcion del umbral, Y su varianza, para ver como varía a medida que tenemos menos datos en valores más extremos.
+>
+>   Y como tengo tableta de dibujo, te hago un dibujito:
+>
+> ![varianza-del-nivel-de-retorno.png](../Imagenes/varianza-del-nivel-de-retorno.png)
+
 
 ```{r}
 
