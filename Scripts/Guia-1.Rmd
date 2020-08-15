@@ -11,6 +11,9 @@ jupyter:
     display_name: R
     language: R
     name: ir
+output:
+  html_document:
+    df_print: paged
 ---
 
 Escribo acá algunos posibles ejercicios
@@ -153,7 +156,7 @@ library(ismev)
 ```
 
 ```{r}
-datos <- rgumbel(1e3)
+datos <- rgumbel(1e1)
 ```
 
 1 . 
@@ -201,8 +204,8 @@ estim_zp <- function(p, mu, sigma){
 3. Graficar $z_p$ en función de $\log(y_p)$ para una grilla de valores entre 0.01 y 0.99, usando los parámetros estimados en 1.
 
 ```{r}
-mu    <- 0.03636916#gum$mle[1]
-sigma <- 0.98582371#gum$mle[2]
+mu    <- gum$mle[1]
+sigma <- gum$mle[2]
 ```
 
 ```{r}
@@ -212,7 +215,7 @@ estims <- rep(NA, m)
 logyps <- rep(NA, m)
 for(i in 1:m){
     p <- gridp[i]
-    estims[i] <- estim_zp(mu, sigma, p)
+    estims[i] <- estim_zp(p, mu, sigma)
     yp <- -log(1-p)
     logyps[i] <- log(yp)
 }
@@ -220,7 +223,7 @@ for(i in 1:m){
 ```
 
 ```{r}
-plot(estims, logyps, xlab=expression(z[p]), ylab=expression(log(y[p])))
+plot(estims, logyps, xlab=expression(z[p]), ylab=expression(log(y[p])), pch=20)
 ```
 
 ### Varianza del estimador
@@ -244,13 +247,18 @@ Derivando el $z_p$ de arriba
 
 Repita lo mismo que 3 pero agregando la desviación estándar en el gráfico (por encima y debajo de la curva).
 
-Utilice las estimaciónes que devuelve `gum.fit` junto con los gradientes de los estimadores
+Utilice la estimación de la matriz de covarianza `$cov` que devuelve `gum.fit` junto con los gradientes del estimador de $z_p$
+
+TIP: Use el operador `%*%` para computar el producto entre matrices, y el comando `matrix(c(1, ds))` para generar una matriz de un array de datos.
 
 ```{r}
+t(matrix(c(1,2)))
 
 ```
 
 ```{r}
+cov <- gum$cov
+
 gridp <- seq(0.01, 0.99, 0.01)
 m <- length(gridp)
 zps <- rep(NA, m)
@@ -258,8 +266,12 @@ vars <- rep(NA, m)
 logyps <- rep(NA, m)
 for(i in 1:m){
     p <- gridp[i]
-    zps[i]  <- estim_zp(mu, sigma, p)
-    vars[i] <- 
+    du <- 1
+    ds <- -log( -log(1-p) ) 
+    grad_zp <- matrix( c(du, ds) )
+    
+    zps[i]  <- estim_zp(p, mu, sigma)
+    vars[i] <- t(grad_zp) %*% cov %*% grad_zp 
     yp <- -log(1-p)
     logyps[i] <- log(yp)
 }
@@ -267,7 +279,9 @@ for(i in 1:m){
 ```
 
 ```{r}
-
+plot(logyps, estims, xlab=expression(z[p]), ylab=expression(log(y[p])), pch=20)
+lines(logyps, estims+vars)
+lines(logyps, estims-vars)
 ```
 
 ---
