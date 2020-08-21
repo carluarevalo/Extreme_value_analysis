@@ -151,14 +151,33 @@ EJ: Con `gum.fit` encuentre el parámetro $\hat \sigma$ y $\hat \mu$
 ```{r}
 #install.packages('evd')
 #install.packages('ismev')
+library(heatwaveR)
 library(evd)
 library(ismev)
 ```
 
+Guarde los datos máximos diarios de la librería `heatwaveR` y filtre del dataset `Algiers` los máximos de cada año (los datos de Algiers son diarios)
+
 ```{r}
-datos <- rgumbel(1e1)
+#datos <- rgumbel(1e3)
+datos <- Algiers[, 'tMax']
 ```
 
+```{r}
+# Me quedo con el max de cada año
+n <- length(datos)
+datos_max <- c()
+i <- 1
+for(d in seq(1, n, 365)){
+    if( (n-365) < 0 ){
+        # Ultimas mediciones
+        datos_max[i] <- max(datos[d:n])
+    }else{
+        datos_max[i] <- max(datos[d:d+365-1])
+    }
+    i <- i + 1
+}
+```
 1 . 
 
 Explore el comando `gum.fit` de la librería `ismev` usando los datos del ejercicio.
@@ -166,8 +185,8 @@ Explore el comando `gum.fit` de la librería `ismev` usando los datos del ejerci
 ¿Qué valores se corresponden a las estimaciones de máxima verosimilitud? ¿Qué representa `$se`?
 
 ```{r}
-gum <- gum.fit(datos)
-gum
+gum <- gum.fit(datos_max[-length(datos_max)])
+gum$mle
 ```
 
         $conv
@@ -249,12 +268,7 @@ Repita lo mismo que 3 pero agregando la desviación estándar en el gráfico (po
 
 Utilice la estimación de la matriz de covarianza `$cov` que devuelve `gum.fit` junto con los gradientes del estimador de $z_p$
 
-TIP: Use el operador `%*%` para computar el producto entre matrices, y el comando `matrix(c(1, ds))` para generar una matriz de un array de datos.
-
-```{r}
-t(matrix(c(1,2)))
-
-```
+TIP: Use el operador `%*%` para computar el producto entre matrices, `t()` para trasponer, y el comando `matrix(c(1, ds))` para generar una matriz de un array de datos.
 
 ```{r}
 cov <- gum$cov
@@ -279,9 +293,17 @@ for(i in 1:m){
 ```
 
 ```{r}
-plot(logyps, estims, xlab=expression(z[p]), ylab=expression(log(y[p])), pch=20)
-lines(logyps, estims+vars)
-lines(logyps, estims-vars)
+plot(logyps,  zps, xlab=expression(log(y[p])), ylab=expression(z[p]), pch=20)
+lines(logyps, zps+vars)
+lines(logyps, zps-vars)
+
+plot(gridp, zps, xlab=expression(z[p]), ylab=expression(p), pch=20)
+lines(gridp, zps+vars)
+lines(gridp, zps-vars)
+
+plot(gridp[70:90], zps[70:90], xlab=expression(z[p]), ylab=expression(p), pch=20)
+lines(gridp[70:90], zps[70:90]+vars[70:90])
+lines(gridp[70:90], zps[70:90]-vars[70:90])
 ```
 
 ---
