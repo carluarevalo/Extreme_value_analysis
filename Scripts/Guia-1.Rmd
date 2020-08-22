@@ -12,52 +12,16 @@ jupyter:
     language: R
     name: ir
 output:
+  pdf_document: default
   html_document:
     df_print: paged
 ---
 
-Escribo acá algunos posibles ejercicios
 
-$$\huge 🙈$$
-
-
-En esta guía veremos cómo modelar una serie de datos observados usando:
-
-1. **Máximos por Períodos** y el ***Teorema de Generalized Extreme Values (GEV)***
-
-2. **Excesos sobre Umbral** y el ***Teorema de Generalized Pareto Distribution (GPD)***
-
-Los datos se corresponden al dataset de $\mathcal C$arli  `[y acá iría descripción del dataset]`.
-
-1. Para máximos por períodos: 
-
-> usamos Gumbell como dijo Mariela? justificando que es el caso más común y (tal vez) simple de analizar.
->
-> Mencionamos usos de los otros dos casos? maybe grafiquitos en imagen y fin?
-
-1. Para umbral
-
-> Hay solo una, pero con parámetro = 0
-
-3. Para ambos
-
-> * Filtrar datos => Ajustar F => Devolver parámetros
-> Maybe: Guardar matriz de var-cov => calcular varianza del nivel de retorno $Var(\hat z_p)\approx \nabla z_p^T \ V \ \nabla z_p$, donde V es la matriz de var-cov de los estimadores de cada parametro
->
->   Capaz se pueda graficar el nivel de retorno en funcion del umbral, Y su varianza, para ver como varía a medida que tenemos menos datos en valores más extremos.
->
->   Y como tengo tableta de dibujo, te hago un dibujito:
->
-> ![varianza-del-nivel-de-retorno.png](../Imagenes/varianza-del-nivel-de-retorno.png)
-
-
-```{r}
-
-```
 
 ### Intuicion de distribución del máximo.
 
-Sabemos que un histograma aproxima *(de una forma burda)* la función de densidad $f(x)$ a partir de la cual se generaron los datos $x_1, x_2, \dots, x_n$, asumiendo que son **realizaciones** de variables aleatorias $X_1, X_2, \dots, X_n \ \text{iid}$ con $X_1 \sim f$ 
+Sabemos que la forma de un histograma se aproxima a la función de densidad $f(x)$ a partir de la cual se generaron los datos $x_1, x_2, \dots, x_n$, asumiendo que son **realizaciones** de variables aleatorias $X_1, X_2, \dots, X_n \ \text{iid}$ con $X_1 \sim f$ 
 
 ```{r}
 gridx <- seq(-3,3, 0.1)
@@ -70,27 +34,27 @@ En el problema de modelado de máximos, queremos encontrar una función $g(x)$ a
 
 Siendo concretos, los datos que queremos modelar son:
 
-* Los que sobrepasan algún umbral
-
-  * ej: "$x_i$ mayores a 30", "$x_i$ mayores al 95 percentil"
-    
     
 * Los máximos en un período (bloque) dado
 
   * ej: "teniendo $x_i$ diarios, quiero el mayor $x_i$ de cada año"
   
-Llamamos $\hat x_i$ a los $x_i$ que cumplen su condición de "**máximo**" en cualquiera de los casos.
+* Los que sobrepasan algún umbral
+
+  * ej: "$x_i$ mayores a 30", "$x_i$ mayores al 95 percentil"
+  
+Llamamos $\hat x_i$ a los $x_i$ que cumplen su condición de "**extremo**" en cualquiera de los casos.
 <!-- #endregion -->
 
 <!-- #region -->
-En otras palabras, solo estamos interesados en **la cola de la distribución**.
+En otras palabras, sólo estamos interesados en **la cola de la distribución**.
 
 
 ### Antes de pasar al siguiente ejercicio:
 
->  ¿Podés imaginar cómo resultaría un histograma de los **valores máximos** $\hat x_i$ que se encuentran **en la cola** de una Normal(0,1) como la anterior, a medida que la cantidad de muestras tiende a infinito?
+>  ¿Podés imaginar cómo resultaría un histograma de los **valores máximos** $\hat x_i$ que se encuentran **en la cola** de una Normal(0,1) como la anterior?
 >
-> ¿Podés ver por qué ésto no es así? Qué sucede "alrededor" del umbral? ¿Por qué?
+> ¿Podés ver por qué ésto es así? Qué sucede "alrededor" del umbral? ¿Por qué?
 
 > > ### RTA
 > > Es razonable pensar que un histograma de los valores de la cola de una Normal, será exactamente igual que recortar la cola de un histograma "completo".
@@ -117,36 +81,30 @@ datos  <- rnorm(1e5)
 umbral <- quantile(datos, 0.9, names=F)
 datos_max <- datos[datos > umbral]
 g_estim   <- density(datos_max, bw=0.1)
-hist(datos_max, prob=T, col='steelblue', ylim=c(0, max(g_estim$y)))
+hist(datos_max, prob=T, col='steelblue', ylim=c(0, max(g_estim$y)),
+     main='Histograma de valores extremos',
+     xlab='valores', ylab='Frecuencia relativa')
 lines(g_estim, lwd=3, col='orange')
 ```
 
-```{r}
+# Introducción
 
-```
+En esta guía veremos cómo modelar una serie de datos observados usando:
+
+1. **Máximos por Períodos** y el ***Teorema de Generalized Extreme Values (GEV)***
+
+2. **Excesos sobre Umbral** y el ***Teorema de Generalized Pareto Distribution (GPD)***
+
+Los datos se corresponden al dataset `Algiers`, que contiene las temperaturas máximas y mínimas diarias en el período 1961-2005. El mismo se puede descargar usando el paquete `heatwaveR`.
+En particular, nos vamos a concentrar en el uso de las primeras.
 
 # Nivel de Retorno - GEV
 
-> TODO: Plot de Ret level vs -log(1-p) en escala logaritmica pag 58
+Como los datos sobre los que vamos a trabajar son de temperaturas máximas, sabemos que estos datos se van a ajustar bajo la metodología de GEV, particularmente con la **Familia Gumbel**.
 
+Será de interés estimar sus parámetros característicos, y obtener un nivel de retorno para algún $z_p$
 
-Por Teorema sabemos que la distribución de máximos tiende a una GEV cuando $n \rightarrow \infty$
-
-$$\Large \mathrm P \left(\frac{M_n-b_n}{a_n} \leq z \right) \xrightarrow[]{n\rightarrow \infty} G(z) = \exp\left\{ - \left[ 1 + \xi \ \left( \frac{z-\mu}{\sigma} \right) \right]^{-1/\xi} \right\} $$
-
-El nivel de retorno cuando $\xi = 0$ está dado por:
-
-$$\Large z_p = \mu - \sigma \log\{-\log(1-p)\}$$
-
-(pag 48-49, Coles & Brenner)
-
-Y lo que queremos hacer es estimar sus parámetros y obtener un nivel de retorno estimado.
-
-Vamos a avanzar suponiendo que $\xi = 0$, con lo que $G(z)$ es ahora de la **Familia Gumbel**
-
-$$\Large G(z) = \exp \left\{ -\exp \left( -\frac{z-\mu}{\sigma} \right) \right\}$$
-
-EJ: Con `gum.fit` encuentre el parámetro $\hat \sigma$ y $\hat \mu$
+Explorando el comando `gum.fit` hallá los parámetros $\hat \sigma$ y $\hat \mu$
 
 ```{r}
 #install.packages('evd')
@@ -156,28 +114,22 @@ library(evd)
 library(ismev)
 ```
 
-Guarde los datos máximos diarios de la librería `heatwaveR` y filtre del dataset `Algiers` los máximos de cada año (los datos de Algiers son diarios)
+Guardá los datos máximos diarios de la librería `heatwaveR` y filtrá del dataset `Algiers` los máximos de cada año (notá que los datos de Algiers son diarios)
 
 ```{r}
 #datos <- rgumbel(1e3)
-datos <- Algiers[, 'tMax']
+datos <- Algiers
 ```
 
 ```{r}
-# Me quedo con el max de cada año
-n <- length(datos)
-datos_max <- c()
-i <- 1
-for(d in seq(1, n, 365)){
-    if( (n-365) < 0 ){
-        # Ultimas mediciones
-        datos_max[i] <- max(datos[d:n])
-    }else{
-        datos_max[i] <- max(datos[d:d+365-1])
-    }
-    i <- i + 1
-}
+maximos_anuales <- rep(NA, times=45)
+for(i in 1:45){
+  anio <- as.character(1960+i)
+  anio_dato <- substring(datos$t,1,4)
+  maximos_anuales[i] <- max(datos$tMax[which(anio_dato==anio)])
+} 
 ```
+
 1 . 
 
 Explore el comando `gum.fit` de la librería `ismev` usando los datos del ejercicio.
@@ -185,33 +137,20 @@ Explore el comando `gum.fit` de la librería `ismev` usando los datos del ejerci
 ¿Qué valores se corresponden a las estimaciones de máxima verosimilitud? ¿Qué representa `$se`?
 
 ```{r}
-gum <- gum.fit(datos_max[-length(datos_max)])
+gum <- gum.fit(maximos_anuales[-length(maximos_anuales)])
 gum$mle
 ```
+# Nivel de Retorno 
 
-        $conv
-        [1] 0
+2. Recordá que el nivel de retorno $z_p$ es el valor que puede ser superado por el máximo anual en cualquier año, con probabilidad $p$
 
-        $nllh
-        [1] 1561.445
+Reemplazá los valores estimados en la función de nivel de retorno $z_p$
 
-        $mle
-        [1] 0.03636916 0.98582371
+Definí una función `estim_zp` que tome como input el nivel $p$ y las estimaciones de $\mu$ y $\sigma$, y devuelva el nivel de retorno $z_p$
 
-        $se
-        [1] 0.03283458 0.02429191
+Computá el valor de $z_p$ para las estimaciones del problema anterior 
 
-
-
-2 .
-
-Reemplace los valores estimados en la función de nivel de retorno $z_p$
-
-Defina una función `estim_zp` que tome como input el nivel $p$ y las estimaciones de $\mu$ y $\sigma$, y devuelva el nivel de retorno $z_p$
-
-Compute el valor de zp para las estimaciones de 1, 
-
-> **Podemos decir que el nivel de retorno $z_p$ es el valor que puede ser superado por el máximo anual en cualquier año, con probabilidad $p$**
+> ****
 
 ```{r}
 estim_zp <- function(p, mu, sigma){
@@ -220,7 +159,7 @@ estim_zp <- function(p, mu, sigma){
 }
 ```
 
-3. Graficar $z_p$ en función de $\log(y_p)$ para una grilla de valores entre 0.01 y 0.99, usando los parámetros estimados en 1.
+3. Usando la función del problema anterior, graficá $z_p$ en función de $\log(y_p)$ para una grilla de valores entre 0.01 y 0.99, usando los parámetros estimados en el ejercicio 1.
 
 ```{r}
 mu    <- gum$mle[1]
@@ -245,12 +184,11 @@ for(i in 1:m){
 plot(estims, logyps, xlab=expression(z[p]), ylab=expression(log(y[p])), pch=20)
 ```
 
-### Varianza del estimador
+# Varianza del estimador
 
 Por el [Método Delta](https://es.wikipedia.org/wiki/M%C3%A9todo_delta), sabemos que: 
 
 $$\Large \mathrm{Var}(\hat z_p)\approx \nabla z_p^T \ \mathbf V \ \nabla z_p$$
-
 Donde
 
 > $\large \nabla z_p^T = \left[ \frac{\partial z_p}{\partial \mu},\frac{\partial z_p}{\partial \sigma}  \right]$
@@ -297,24 +235,19 @@ plot(logyps,  zps, xlab=expression(log(y[p])), ylab=expression(z[p]), pch=20)
 lines(logyps, zps+vars)
 lines(logyps, zps-vars)
 
-plot(gridp, zps, xlab=expression(z[p]), ylab=expression(p), pch=20)
+plot(gridp, zps, xlab=expression(p), ylab=expression(z[p]), pch=20)
 lines(gridp, zps+vars)
 lines(gridp, zps-vars)
-
-plot(gridp[70:90], zps[70:90], xlab=expression(z[p]), ylab=expression(p), pch=20)
-lines(gridp[70:90], zps[70:90]+vars[70:90])
-lines(gridp[70:90], zps[70:90]-vars[70:90])
 ```
 
----
-
-Capaz la pareto dejarla como opcional con otra cosa o fuera.
-
-TODO: Ver si el mismo analisis que antes devuelve más o menos lo mismo o hay cosas muy distintas a destacar.
-
 <!-- #region -->
-# Nivel de Retorno - Pareto
 
+# Bonus Track
+
+Repetí los mismos ejercicios anteriores pero considerando la distribución de Pareto.
+
+
+# Nivel de Retorno - Pareto
 
 Es conveniente usar escalas anuales para calcular el nivel de retorno, de forma tener una interpretación simple:
 > ***El nivel de retorno anual N, es el valor que se espera superar 1 sola vez cada N años***
