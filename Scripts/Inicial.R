@@ -19,7 +19,7 @@ library(heatwaveR)
 datos <- Algiers
 
 library(ggplot2)
-ggplot(data=datos, aes(x=t, y=tMax)) + xlab("Años") + ylab("Temperatura") + geom_line(color = "firebrick") + geom_point(color="darkorchid3") + labs(title = "Temperaturas máximas en Argel durante el período 1961-2005") + theme_minimal()
+ggplot(data=datos, aes(x=t, y=tMax)) + xlab("Años") + ylab("Temperatura") + geom_line(color = "firebrick") + geom_point(color="black") + labs(title = "Temperaturas máximas en Argel durante el período 1961-2005") + theme_minimal()
 
 #Del grafico que muestra la serie de temperaturas maximas para esta ciudad a lo largo de este periodo se observa que las mismas se encuentran 
 #entre los valores de 15°C y 35°C, con algunos casos anomalos por debajo y por arriba de estos valores. ¿Que tan anomalos son estos valores,
@@ -33,10 +33,26 @@ ggplot(data=datos, aes(x=t, y=tMax)) + xlab("Años") + ylab("Temperatura") + geom
 
 #MÉTODO 1#
 
+#Calculo los máximos anuales
+maximos_anuales <- rep(NA,times=45)
+for(i in 1:45){
+  anio <- 1960+i
+  maximos_anuales[i] <- max(datos$tMax[which(substring(datos$t,1,4)==as.character(anio))])
+}
+anios <- c(1961:2005)
 
+#Ploteo los máximos anuales
+ggplot(data=algiers_maximos, aes(x=anios, y=maximos_anuales)) + xlab("Años") + ylab("Temperatura máxima anual") + geom_point(color="black") + labs(title = "Temperaturas máximas anuales en Argel durante el período 1961-2005") + theme_minimal()
 
+#MÉTODO 2
 
+ggplot(data=datos, aes(x=t, y=tMax)) + xlab("Años") + ylab("Temperatura") + geom_line(color = "firebrick") + geom_point(color="black") + labs(title = "Temperaturas máximas en Argel durante el período 1961-2005") + theme_minimal() + geom_hline(yintercept=35, linetype="dashed", color = "red", size=1.5)
 
-
-#NOTE TO SELF (03:10):
-#ACA VENDRIA EXPLICAR LO DE LOS TRES TIPOS DE GEV Y COMO SERIA LO MISMO PREGUNTAR POR LA DISTRIBUCION GENERALIZADA DE VALORES EXTREMOS.
+threshold <- data.frame()
+j <- 1
+for(i in 1:length(datos$t)){
+  if(datos$tMax[i,]>u){
+    threshold[j,] <- datos[i,]
+  }
+  j <- j + 1
+}
