@@ -17,7 +17,40 @@ output:
     df_print: paged
 ---
 
+En esta guía veremos cómo modelar una serie de datos observados usando:
 
+1. **Máximos por Períodos** y el ***Teorema de Generalized Extreme Values (GEV)***
+
+2. **Excesos sobre Umbral** y el ***Teorema de Generalized Pareto Distribution (GPD)***
+
+Los datos se corresponden al dataset `Algiers`, que contiene las temperaturas máximas y mínimas diarias en el período 1961-2005. El mismo se puede descargar usando el paquete `heatwaveR`.
+En particular, nos vamos a concentrar en el uso de las primeras.
+
+1. Para máximos por períodos: 
+
+> usamos Gumbell como dijo Mariela? justificando que es el caso más común y (tal vez) simple de analizar.
+>
+> Mencionamos usos de los otros dos casos? maybe grafiquitos en imagen y fin?
+
+1. Para umbral
+
+> Hay solo una, pero con parámetro = 0
+
+3. Para ambos
+
+> * Filtrar datos => Ajustar F => Devolver parámetros
+> Maybe: Guardar matriz de var-cov => calcular varianza del nivel de retorno $Var(\hat z_p)\approx \nabla z_p^T \ V \ \nabla z_p$, donde V es la matriz de var-cov de los estimadores de cada parametro
+>
+>   Capaz se pueda graficar el nivel de retorno en funcion del umbral, Y su varianza, para ver como varía a medida que tenemos menos datos en valores más extremos.
+>
+>   Y como tengo tableta de dibujo, te hago un dibujito:
+>
+> ![varianza-del-nivel-de-retorno.png](../Imagenes/varianza-del-nivel-de-retorno.png)
+
+
+```{r}
+
+```
 
 ### Intuicion de distribución del máximo.
 
@@ -87,24 +120,32 @@ hist(datos_max, prob=T, col='steelblue', ylim=c(0, max(g_estim$y)),
 lines(g_estim, lwd=3, col='orange')
 ```
 
-# Introducción
+```{r}
 
-En esta guía veremos cómo modelar una serie de datos observados usando:
-
-1. **Máximos por Períodos** y el ***Teorema de Generalized Extreme Values (GEV)***
-
-2. **Excesos sobre Umbral** y el ***Teorema de Generalized Pareto Distribution (GPD)***
-
-Los datos se corresponden al dataset `Algiers`, que contiene las temperaturas máximas y mínimas diarias en el período 1961-2005. El mismo se puede descargar usando el paquete `heatwaveR`.
-En particular, nos vamos a concentrar en el uso de las primeras.
+```
 
 # Nivel de Retorno - GEV
 
-Como los datos sobre los que vamos a trabajar son de temperaturas máximas, sabemos que estos datos se van a ajustar bajo la metodología de GEV, particularmente con la **Familia Gumbel**.
+> TODO: Plot de Ret level vs -log(1-p) en escala logaritmica pag 58
 
-Será de interés estimar sus parámetros característicos, y obtener un nivel de retorno para algún $z_p$
 
-Explorando el comando `gum.fit` hallá los parámetros $\hat \sigma$ y $\hat \mu$
+Por Teorema sabemos que la distribución de máximos tiende a una GEV cuando $n \rightarrow \infty$
+
+$$\Large \mathrm P \left(\frac{M_n-b_n}{a_n} \leq z \right) \xrightarrow[]{n\rightarrow \infty} G(z) = \exp\left\{ - \left[ 1 + \xi \ \left( \frac{z-\mu}{\sigma} \right) \right]^{-1/\xi} \right\} $$
+
+El nivel de retorno cuando $\xi = 0$ está dado por:
+
+$$\Large z_p = \mu - \sigma \log\{-\log(1-p)\}$$
+
+(pag 48-49, Coles & Brenner)
+
+Y lo que queremos hacer es estimar sus parámetros y obtener un nivel de retorno estimado.
+
+Vamos a avanzar suponiendo que $\xi = 0$, con lo que $G(z)$ es ahora de la **Familia Gumbel**
+
+$$\Large G(z) = \exp \left\{ -\exp \left( -\frac{z-\mu}{\sigma} \right) \right\}$$
+
+EJ: Con `gum.fit` encuentre el parámetro $\hat \sigma$ y $\hat \mu$
 
 ```{r}
 #install.packages('evd')
@@ -114,22 +155,28 @@ library(evd)
 library(ismev)
 ```
 
-Guardá los datos máximos diarios de la librería `heatwaveR` y filtrá del dataset `Algiers` los máximos de cada año (notá que los datos de Algiers son diarios)
+Guarde los datos máximos diarios de la librería `heatwaveR` y filtre del dataset `Algiers` los máximos de cada año (los datos de Algiers son diarios)
 
 ```{r}
 #datos <- rgumbel(1e3)
-datos <- Algiers
+datos <- Algiers[, 'tMax']
 ```
 
 ```{r}
-maximos_anuales <- rep(NA, times=45)
-for(i in 1:45){
-  anio <- as.character(1960+i)
-  anio_dato <- substring(datos$t,1,4)
-  maximos_anuales[i] <- max(datos$tMax[which(anio_dato==anio)])
-} 
+# Me quedo con el max de cada año
+n <- length(datos)
+datos_max <- c()
+i <- 1
+for(d in seq(1, n, 365)){
+    if( (n-365) < 0 ){
+        # Ultimas mediciones
+        datos_max[i] <- max(datos[d:n])
+    }else{
+        datos_max[i] <- max(datos[d:d+365-1])
+    }
+    i <- i + 1
+}
 ```
-
 1 . 
 
 Explore el comando `gum.fit` de la librería `ismev` usando los datos del ejercicio.
@@ -137,20 +184,33 @@ Explore el comando `gum.fit` de la librería `ismev` usando los datos del ejerci
 ¿Qué valores se corresponden a las estimaciones de máxima verosimilitud? ¿Qué representa `$se`?
 
 ```{r}
-gum <- gum.fit(maximos_anuales)
+gum <- gum.fit(datos_max[-length(datos_max)])
 gum$mle
 ```
-# Nivel de Retorno 
 
-2. Recordá que el nivel de retorno $z_p$ es el valor que puede ser superado por el máximo anual en cualquier año, con probabilidad $p$
+        $conv
+        [1] 0
 
-Reemplazá los valores estimados en la función de nivel de retorno $z_p$
+        $nllh
+        [1] 1561.445
 
-Definí una función `estim_zp` que tome como input el nivel $p$ y las estimaciones de $\mu$ y $\sigma$, y devuelva el nivel de retorno $z_p$
+        $mle
+        [1] 0.03636916 0.98582371
 
-Computá el valor de $z_p$ para las estimaciones del problema anterior 
+        $se
+        [1] 0.03283458 0.02429191
 
-> ****
+
+
+2 .
+
+Reemplace los valores estimados en la función de nivel de retorno $z_p$
+
+Defina una función `estim_zp` que tome como input el nivel $p$ y las estimaciones de $\mu$ y $\sigma$, y devuelva el nivel de retorno $z_p$
+
+Compute el valor de zp para las estimaciones de 1, 
+
+> **Podemos decir que el nivel de retorno $z_p$ es el valor que puede ser superado por el máximo anual en cualquier año, con probabilidad $p$**
 
 ```{r}
 estim_zp <- function(p, mu, sigma){
@@ -159,7 +219,7 @@ estim_zp <- function(p, mu, sigma){
 }
 ```
 
-3. Usando la función del problema anterior, graficá $z_p$ en función de $\log(y_p)$ para una grilla de valores entre 0.01 y 0.99, usando los parámetros estimados en el ejercicio 1.
+3. Graficar $z_p$ en función de $\log(y_p)$ para una grilla de valores entre 0.01 y 0.99, usando los parámetros estimados en 1.
 
 ```{r}
 mu    <- gum$mle[1]
@@ -184,40 +244,30 @@ for(i in 1:m){
 plot(estims, logyps, xlab=expression(z[p]), ylab=expression(log(y[p])), pch=20)
 ```
 
-# Varianza del estimador e Intervalos de Confianza
+### Varianza del estimador
 
 Por el [Método Delta](https://es.wikipedia.org/wiki/M%C3%A9todo_delta), sabemos que: 
 
 $$\Large \mathrm{Var}(\hat z_p)\approx \nabla z_p^T \ \mathbf V \ \nabla z_p$$
-Donde 
 
-> \mathbf V es la matriz de varianzas-covarianzas de $\mu$ y $\sigma$ 
-
-y
+Donde
 
 > $\large \nabla z_p^T = \left[ \frac{\partial z_p}{\partial \mu},\frac{\partial z_p}{\partial \sigma}  \right]$
 
-Derivando el nivel de retorno $z_p$ con respecto a cada una de sus variables, obtenemos
+Derivando el $z_p$ de arriba
 
 > $\large \frac{\partial z_p}{\partial \mu} = 1$
 >
 > $\large \frac{\partial z_p}{\partial \sigma} = -\log\{ -\log (1-p)\}$
 
-*(ver pag. 81-82 "4.3.3 Return Levels")*
 
-4. Repetí lo mismo que en el ejercicio 3 pero agregando el intervalo de confianza de la estimación $\hat z_p$
+4 .
 
-Agregá la desviación estándar en el gráfico (por encima y debajo de la curva), multiplicándola por el percentil $s_{1- \frac\alpha 2}$ de una distribución Normal estándar, para un nivel de confianza del $95%$ (con $\alpha = 0.025$).
+Repita lo mismo que 3 pero agregando la desviación estándar en el gráfico (por encima y debajo de la curva).
 
-Notar que $z_{1- \frac\alpha 2}$ no es lo mismo que $s_p$, donde el primero es el **nivel de retorno**, y el segundo el **percentil de una Normal estándar**)
+Utilice la estimación de la matriz de covarianza `$cov` que devuelve `gum.fit` junto con los gradientes del estimador de $z_p$
 
-Intervalo de confianza del estimador de nivel de retorno $\hat z_p$:
-
-$$\Large (\hat z_p - s_{1-\frac \alpha 2} \ \widehat {\text{se}} , \ \hat z_p + s_{1-\frac \alpha 2} \ \widehat {\text{se}})$$
-
-Para ello, utilizá la estimación de la matriz de covarianza `$cov` que devuelve `gum.fit` junto con los gradientes del estimador $\hat z_p$ del nivel de retorno, en el producto de matrices mencionado arriba para obtener la varianza del estimador $\mathrm{Var}(\hat z_p)$
-
-TIP: Usá el operador `%*%` para computar el producto entre matrices, `t()` para trasponer, y el comando `matrix(c(1, ds))` para generar una matriz de un array de datos.
+TIP: Use el operador `%*%` para computar el producto entre matrices, `t()` para trasponer, y el comando `matrix(c(1, ds))` para generar una matriz de un array de datos.
 
 ```{r}
 cov <- gum$cov
@@ -242,78 +292,28 @@ for(i in 1:m){
 ```
 
 ```{r}
-z_alpha <- qnorm(p=1-0.05)
 plot(logyps,  zps, xlab=expression(log(y[p])), ylab=expression(z[p]), pch=20)
-lines(logyps, zps + z_alpha * sqrt(vars))
-lines(logyps, zps - z_alpha * sqrt(vars))
+lines(logyps, zps+vars)
+lines(logyps, zps-vars)
 
-plot(gridp, zps, xlab=expression(p), ylab=expression(z[p]), pch=20)
-lines(gridp, zps+ z_alpha * sqrt(vars))
-lines(gridp, zps- z_alpha * sqrt(vars))
+plot(gridp, zps, xlab=expression(z[p]), ylab=expression(p), pch=20)
+lines(gridp, zps+vars)
+lines(gridp, zps-vars)
+
+plot(gridp[70:90], zps[70:90], xlab=expression(z[p]), ylab=expression(p), pch=20)
+lines(gridp[70:90], zps[70:90]+vars[70:90])
+lines(gridp[70:90], zps[70:90]-vars[70:90])
 ```
+
+---
+
+Capaz la pareto dejarla como opcional con otra cosa o fuera.
+
+TODO: Ver si el mismo analisis que antes devuelve más o menos lo mismo o hay cosas muy distintas a destacar.
 
 <!-- #region -->
-
-# Bootstrap
-
-Otra forma de obtener la desviación estándar del estimador es mediante bootstrap:
-
-1. Sample aleatorio con reposición de mi bolsa de datos
-2. Estimo el nivel de retorno para esta muestra
-3. Repito 1 y 2 una gran cantidad de veces (ej: Nboot=1000)
-4. Calculo la desviación estándar sobre el total de niveles de retornos obtenidos en cada iteración
-
-```{r}
-experiment <- function(X, p){
-    gum   <- gum.fit(X, show=F)
-    mu    <- gum$mle[1]
-    sigma <- gum$mle[2]
-    return( estim_zp(p, mu, sigma) )
-}
-```
-
-```{r}
-estim.se.f.bootstrap <- function(X, p){
-    Nboot <- 1000
-    m <- length(X)
-    fs <- rep(NA, Nboot)
-    for(i in 1:Nboot){
-        X_boot <- sample(x=X, size=m, replace=T)
-        fs[i]  <- experiment(X_boot, p)
-    }
-    #hist(fs)
-    se <- sd(fs)
-    return(se)
-}
-
-se_zp <- estim.se.f.bootstrap(maximos_anuales, p=0.001)
-se_zp
-```
-
-```{r}
-ses <- rep(NA, length(gridp))
-i <- 1
-for(p in gridp){
-    ses[i] <- estim.se.f.bootstrap(maximos_anuales, p)
-    i <- i+1
-}
-
-```
-```{r}
-z <- qnorm(p=1-0.025)
-plot(gridp, zps, pch=20)
-lines(gridp, zps - z*ses)
-lines(gridp, zps + z*ses)
-```
-
-# Bonus Track
-
-Repetí los mismos ejercicios anteriores pero considerando la distribución de Pareto.
-
-¿Notás alguna diferencia en las estimaciónes e intervalos de confianza? ¿En qué casos habría diferencias más grandes?
-
-
 # Nivel de Retorno - Pareto
+
 
 Es conveniente usar escalas anuales para calcular el nivel de retorno, de forma tener una interpretación simple:
 > ***El nivel de retorno anual N, es el valor que se espera superar 1 sola vez cada N años***
