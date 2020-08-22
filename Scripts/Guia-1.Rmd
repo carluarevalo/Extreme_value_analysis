@@ -148,9 +148,7 @@ Reemplazá los valores estimados en la función de nivel de retorno $z_p$
 
 Definí una función `estim_zp` que tome como input el nivel $p$ y las estimaciones de $\mu$ y $\sigma$, y devuelva el nivel de retorno $z_p$
 
-Computá el valor de $z_p$ para las estimaciones del problema anterior 
-
-> ****
+Computá el valor de $z_p$ para las estimaciones del problema anterior usando su definición (ver pag 56 "Inference for Return Levels")
 
 ```{r}
 estim_zp <- function(p, mu, sigma){
@@ -188,10 +186,10 @@ plot(estims, logyps, xlab=expression(z[p]), ylab=expression(log(y[p])), pch=20)
 
 Por el [Método Delta](https://es.wikipedia.org/wiki/M%C3%A9todo_delta), sabemos que: 
 
-$$\Large \mathrm{Var}(\hat z_p)\approx \nabla z_p^T \ \mathbf V \ \nabla z_p$$
+$$\Large \mathrm{Var}(\hat z_p)\approx \nabla z_p^T \ V \ \nabla z_p$$
 Donde 
 
-> \mathbf V es la matriz de varianzas-covarianzas de $\mu$ y $\sigma$ 
+> $V$ es la matriz de varianzas-covarianzas de $\mu$ y $\sigma$ 
 
 y
 
@@ -310,7 +308,7 @@ lines(gridp, zps + z*ses)
 
 Repetí los mismos ejercicios anteriores pero considerando la distribución de Pareto.
 
-¿Notás alguna diferencia en las estimaciónes e intervalos de confianza? ¿En qué casos habría diferencias más grandes?
+¿Notás alguna diferencia en las estimaciónes e intervalos de confianza entre Pareto y Gumbel? ¿En qué casos habría diferencias más grandes?
 
 
 # Nivel de Retorno - Pareto
