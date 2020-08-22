@@ -137,7 +137,7 @@ Explore el comando `gum.fit` de la librería `ismev` usando los datos del ejerci
 ¿Qué valores se corresponden a las estimaciones de máxima verosimilitud? ¿Qué representa `$se`?
 
 ```{r}
-gum <- gum.fit(maximos_anuales[-length(maximos_anuales)])
+gum <- gum.fit(maximos_anuales)
 gum$mle
 ```
 # Nivel de Retorno 
@@ -241,6 +241,53 @@ lines(gridp, zps-vars)
 ```
 
 <!-- #region -->
+
+# Intervalo de Confianza
+
+Utilizando la función `ci` del paquete `extRemes`, relizá el mismo gráfico que en el ejercicio 4. pero utilizando los **extremos del intervalo de confianza** en lugar de la varianza del estimador $z_p$
+
+```{r}
+experiment <- function(X, p){
+    gum   <- gum.fit(X, show=F)
+    mu    <- gum$mle[1]
+    sigma <- gum$mle[2]
+    return( estim_zp(p, mu, sigma) )
+}
+
+
+```
+
+```{r}
+estim.se.f.bootstrap <- function(X, p){
+    Nboot <- 1000
+    m <- length(X)
+    fs <- rep(NA, Nboot)
+    for(i in 1:Nboot){
+        X_boot <- sample(x=X, size=m, replace=T)
+        fs[i]  <- experiment(X_boot, p)
+    }
+    #hist(fs)
+    se <- sd(fs)
+    return(se)
+}
+
+se_zp <- estim.se.f.bootstrap(maximos_anuales, p=0.001)
+se_zp
+```
+```{r}
+ses <- rep(NA, length(gridp))
+i <- 1
+for(p in gridp){
+    ses[i] <- estim.se.f.bootstrap(maximos_anuales, p)
+    i <- i+1
+}
+
+```
+```{r}
+plot(gridp, zps, pch=20)
+lines(gridp, zps - ses)
+lines(gridp, zps + ses)
+```
 
 # Bonus Track
 
