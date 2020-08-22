@@ -1,23 +1,9 @@
 ---
-jupyter:
-  jupytext:
-    formats: ipynb,Rmd
-    text_representation:
-      extension: .Rmd
-      format_name: rmarkdown
-      format_version: '1.2'
-      jupytext_version: 1.4.2
-  kernelspec:
-    display_name: R
-    language: R
-    name: ir
-output:
-  pdf_document: default
-  html_document:
-    df_print: paged
+title: "Extremos"
+author: "jack"
+date: "8/22/2020"
+output: html_document
 ---
-
-
 
 ### Intuicion de distribución del máximo.
 
@@ -314,6 +300,7 @@ Repetí los mismos ejercicios anteriores pero considerando la distribución de P
 # Nivel de Retorno - Pareto
 
 Es conveniente usar escalas anuales para calcular el nivel de retorno, de forma tener una interpretación simple:
+
 > ***El nivel de retorno anual N, es el valor que se espera superar 1 sola vez cada N años***
 
 Partiendo de que queremos calcular el área a derecha de un umbral, de una función de densidad que aproximamos con una de la **Familia Pareto Generalizada**
@@ -327,4 +314,4 @@ $$\Large z_n = u + \sigma \log (N \ n_y \ \mathrm P(X>u))$$
 *(página 81 en Coles & Trener)*
 <!-- #endregion -->
 
-EJ: Estimar el valor del parámetro $\sigma$ de la Pareto usando la función `ver funcion de R`
+Estimar los parámetros usando la función `gpd` de la librería `evir` (o alguna equivalente).
