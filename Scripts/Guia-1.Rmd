@@ -284,9 +284,10 @@ for(p in gridp){
 
 ```
 ```{r}
+z <- qnorm(p=1-0.025)
 plot(gridp, zps, pch=20)
-lines(gridp, zps - ses)
-lines(gridp, zps + ses)
+lines(gridp, zps - z*ses)
+lines(gridp, zps + z*ses)
 ```
 
 # Bonus Track
