@@ -48,11 +48,9 @@ ggplot(data=algiers_maximos, aes(x=anios, y=maximos_anuales)) + xlab("Años") + y
 
 ggplot(data=datos, aes(x=t, y=tMax)) + xlab("Años") + ylab("Temperatura") + geom_line(color = "firebrick") + geom_point(color="black") + labs(title = "Temperaturas máximas en Argel durante el período 1961-2005") + theme_minimal() + geom_hline(yintercept=35, linetype="dashed", color = "red", size=1.5)
 
-threshold <- data.frame()
-j <- 1
-for(i in 1:length(datos$t)){
-  if(datos$tMax[i,]>u){
-    threshold[j,] <- datos[i,]
-  }
-  j <- j + 1
-}
+threshold <- datos$tMax[which(datos$tMax>35)]
+fechas <- datos$t[which(datos$tMax>35)]  
+  
+pareto <- data.frame(fechas, threshold)
+
+ggplot(data=pareto, aes(x=fechas, y=threshold)) + xlab("Tiempo") + ylab("Temperatura máxima diaria")+ geom_point(color="black") + labs(title = "Temperaturas máximas en Argel durante el período 1961-2005") + theme_minimal() + geom_hline(yintercept=35, linetype="dashed", color = "red", size=1.5)
