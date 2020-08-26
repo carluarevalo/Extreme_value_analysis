@@ -1,6 +1,6 @@
 ---
 title: "Extremos"
-author: ''
+author: ""
 date: "26/08/2020"
 output:
   html_document: default
@@ -32,9 +32,7 @@ Siendo concretos, los datos que queremos modelar son:
   * ej: "$x_i$ mayores a 30", "$x_i$ mayores al 95 percentil"
   
 Llamamos $\hat x_i$ a los $x_i$ que cumplen su condición de "**extremo**" en cualquiera de los casos.
-<!-- #endregion -->
 
-<!-- #region -->
 En otras palabras, sólo estamos interesados en **la cola de la distribución**.
 
 
@@ -44,36 +42,13 @@ En otras palabras, sólo estamos interesados en **la cola de la distribución**.
 >
 > ¿Podés ver por qué ésto es así? Qué sucede "alrededor" del umbral? ¿Por qué?
 
-> > ### RTA
-> > Es razonable pensar que un histograma de los valores de la cola de una Normal, será exactamente igual que recortar la cola de un histograma "completo".
-> > 
-> > Pero al tener un umbral que **descarta** los valores por debajo del mismo, podemos ver cómo la probabilidad (área) de caer en un entorno de $u$ se redujo a la mitad
-> >
-> > ![intro.png](../Imagenes/intro.png)
-<!-- #endregion -->
 
 # Ejercicio 1.
 
-Realizá un **histograma del percentil 90** como umbral de una muestra **Normal estándar** de `1e5` elementos.
+Realice un **histograma del percentil 90** como umbral de una muestra **Normal estándar** de `1e5` elementos.
 
-Agregá una curva de densidad estimada $\hat g$ utilizando la función `density` sobre los **datos del histograma**.
+Agregue una curva de densidad estimada $\hat g$ utilizando la función `density` sobre los **datos del histograma**.
 
-
-### RTA
-
-Realizamos un histograma de los datos por encima del umbral. Para filtrarlos:
-> `datos[datos > umbral]`
-
-```{r}
-datos  <- rnorm(1e5)
-umbral <- quantile(datos, 0.9, names=F)
-datos_max <- datos[datos > umbral]
-g_estim   <- density(datos_max, bw=0.1)
-hist(datos_max, prob=T, col='steelblue', ylim=c(0, max(g_estim$y)),
-     main='Histograma de valores extremos',
-     xlab='valores', ylab='Frecuencia relativa')
-lines(g_estim, lwd=3, col='orange')
-```
 
 # Introducción
 
@@ -104,30 +79,13 @@ library(ismev)
 
 Guardá los datos máximos diarios de la librería `heatwaveR` y filtrá del dataset `Algiers` los máximos de cada año (notá que los datos de Algiers son diarios)
 
-```{r}
-#datos <- rgumbel(1e3)
-datos <- Algiers
-```
-
-```{r}
-maximos_anuales <- rep(NA, times=45)
-for(i in 1:45){
-  anio <- as.character(1960+i)
-  anio_dato <- substring(datos$t,1,4)
-  maximos_anuales[i] <- max(datos$tMax[which(anio_dato==anio)])
-} 
-```
-
 1 . 
 
 Explore el comando `gum.fit` de la librería `ismev` usando los datos del ejercicio.
 
 ¿Qué valores se corresponden a las estimaciones de máxima verosimilitud? ¿Qué representa `$se`?
 
-```{r}
-gum <- gum.fit(maximos_anuales)
-gum$mle
-```
+
 # Nivel de Retorno 
 
 2. Recordá que el nivel de retorno $z_p$ es el valor que puede ser superado por el máximo anual en cualquier año, con probabilidad $p$
@@ -138,37 +96,7 @@ Definí una función `estim_zp` que tome como input el nivel $p$ y las estimacio
 
 Computá el valor de $z_p$ para las estimaciones del problema anterior usando su definición (ver pag 56 "Inference for Return Levels")
 
-```{r}
-estim_zp <- function(p, mu, sigma){
-    zp <- mu - sigma * log( -log(1-p) )
-    return(zp)
-}
-```
-
 3. Usando la función del problema anterior, graficá $z_p$ en función de $\log(y_p)$ para una grilla de valores entre 0.01 y 0.99, usando los parámetros estimados en el ejercicio 1.
-
-```{r}
-mu    <- gum$mle[1]
-sigma <- gum$mle[2]
-```
-
-```{r}
-gridp <- seq(0.01, 0.99, 0.01)
-m <- length(gridp)
-estims <- rep(NA, m)
-logyps <- rep(NA, m)
-for(i in 1:m){
-    p <- gridp[i]
-    estims[i] <- estim_zp(p, mu, sigma)
-    yp <- -log(1-p)
-    logyps[i] <- log(yp)
-}
-
-```
-
-```{r}
-plot(estims, logyps, xlab=expression(z[p]), ylab=expression(log(y[p])), pch=20)
-```
 
 # Varianza del estimador e Intervalos de Confianza
 
@@ -205,41 +133,6 @@ Para ello, utilizá la estimación de la matriz de covarianza `$cov` que devuelv
 
 TIP: Usá el operador `%*%` para computar el producto entre matrices, `t()` para trasponer, y el comando `matrix(c(1, ds))` para generar una matriz de un array de datos.
 
-```{r}
-cov <- gum$cov
-
-gridp <- seq(0.01, 0.99, 0.01)
-m <- length(gridp)
-zps <- rep(NA, m)
-vars <- rep(NA, m)
-logyps <- rep(NA, m)
-for(i in 1:m){
-    p <- gridp[i]
-    du <- 1
-    ds <- -log( -log(1-p) ) 
-    grad_zp <- matrix( c(du, ds) )
-    
-    zps[i]  <- estim_zp(p, mu, sigma)
-    vars[i] <- t(grad_zp) %*% cov %*% grad_zp 
-    yp <- -log(1-p)
-    logyps[i] <- log(yp)
-}
-
-```
-
-```{r}
-z_alpha <- qnorm(p=1-0.05)
-plot(logyps,  zps, xlab=expression(log(y[p])), ylab=expression(z[p]), pch=20)
-lines(logyps, zps + z_alpha * sqrt(vars))
-lines(logyps, zps - z_alpha * sqrt(vars))
-
-plot(gridp, zps, xlab=expression(p), ylab=expression(z[p]), pch=20)
-lines(gridp, zps+ z_alpha * sqrt(vars))
-lines(gridp, zps- z_alpha * sqrt(vars))
-```
-
-<!-- #region -->
-
 # Bootstrap
 
 Otra forma de obtener la desviación estándar del estimador es mediante bootstrap:
@@ -248,49 +141,6 @@ Otra forma de obtener la desviación estándar del estimador es mediante bootstr
 2. Estimo el nivel de retorno para esta muestra
 3. Repito 1 y 2 una gran cantidad de veces (ej: Nboot=1000)
 4. Calculo la desviación estándar sobre el total de niveles de retornos obtenidos en cada iteración
-
-```{r}
-experiment <- function(X, p){
-    gum   <- gum.fit(X, show=F)
-    mu    <- gum$mle[1]
-    sigma <- gum$mle[2]
-    return( estim_zp(p, mu, sigma) )
-}
-```
-
-```{r}
-estim.se.f.bootstrap <- function(X, p){
-    Nboot <- 1000
-    m <- length(X)
-    fs <- rep(NA, Nboot)
-    for(i in 1:Nboot){
-        X_boot <- sample(x=X, size=m, replace=T)
-        fs[i]  <- experiment(X_boot, p)
-    }
-    #hist(fs)
-    se <- sd(fs)
-    return(se)
-}
-
-se_zp <- estim.se.f.bootstrap(maximos_anuales, p=0.001)
-se_zp
-```
-
-```{r}
-ses <- rep(NA, length(gridp))
-i <- 1
-for(p in gridp){
-    ses[i] <- estim.se.f.bootstrap(maximos_anuales, p)
-    i <- i+1
-}
-
-```
-```{r}
-z <- qnorm(p=1-0.025)
-plot(gridp, zps, pch=20)
-lines(gridp, zps - z*ses)
-lines(gridp, zps + z*ses)
-```
 
 # Bonus Track
 
